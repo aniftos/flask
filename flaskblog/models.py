@@ -1,5 +1,6 @@
 from datetime import datetime
-from flaskblog import db, login_manager
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flaskblog import db, login_manager, app
 from flask_login import UserMixin
 
 @login_manager.user_loader
@@ -17,6 +18,19 @@ class User(db.Model, UserMixin): #Each class is an individual table on the datab
     '''Our post attritube has relationship to the Post model(class). 
     Backref (is like creating a new column but not actuall) and uses the author attribute to get the user who created the post!
     Lazy defines when to pull all the posts data from that specific user. '''
+
+    def get_reset_token(self, expires_sec = 1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_id':self.id}).decode('utf-8') #return token with paylod of userid
+
+    @staticmethod #not to expect that self as an arguent
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
 
     def __repr__(self): # How our object will be printed a user object. This function is called dunder method or magic method
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"

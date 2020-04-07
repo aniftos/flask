@@ -8,7 +8,7 @@ from flaskblog.models import User
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
                             validators = [DataRequired(), Length(min=2,max=20)])
-    email = StringField("Email", 
+    email = StringField('Email', 
                             validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password',
@@ -27,7 +27,7 @@ class RegistrationForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", 
+    email = StringField('Email', 
                             validators=[DataRequired(), Email()])
     password = PasswordField('Password', 
                             validators=[DataRequired()])
@@ -38,7 +38,7 @@ class LoginForm(FlaskForm):
 class UpdateAccountForm(FlaskForm):
     username = StringField('Username',
                             validators = [DataRequired(), Length(min=2,max=20)])
-    email = StringField("Email", 
+    email = StringField('Email', 
                             validators=[DataRequired(), Email()])
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg','png'])])
     submit = SubmitField('Update')
@@ -59,3 +59,19 @@ class PostForm(FlaskForm): #create new form
     title = StringField('Title', validators=[DataRequired()])
     content = TextAreaField('Content', validators = [DataRequired()])
     submit = SubmitField('Post')
+
+
+class RequestResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+    def validate_email(self, email): #thats the format for validation        
+        user = User.query.filter_by(email = email.data).first()
+        if user is None:
+            raise ValidationError('There is no accound with that email. You must register first.')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password',
+                                     validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Reset Password')
+    
