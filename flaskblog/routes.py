@@ -8,6 +8,7 @@ from flaskblog.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
 from flaskblog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+from threading import Thread
 
 
 @app.route('/')
@@ -155,6 +156,7 @@ def user_posts(username):
         .paginate(page = page, per_page=4) #grab all posts from database
     return render_template('user_posts.html', posts = posts, user=user)
 
+
 def send_reset_email(user): #function to send an email!
     token = user.get_reset_token()
     msg = Message('Password Reset Request', 
@@ -164,10 +166,15 @@ def send_reset_email(user): #function to send an email!
     # if message too big use jinja2 to write the msg                
     msg.body = f'''To reset your password, visit the following link:
 {url_for('reset_token',token=token, _external = True)}
-
 If you did not make this request then simply ignore this email and no changes will be made
 '''
-    mail.send(msg) #send the mail
+    #mail.send(msg) #send the mail
+    Thread(target=send_async_email, args=(app,msg)).start()
+
+def send_async_email(app, msg):
+    with app.app_context(): #when running a thread need to give the application context to know that the mail
+        mail.send(msg)       #servel will take the values from the app.config file. It can now see the parameters
+
 
 @app.route("/reset_password", methods = ['GET','POST'])
 def reset_request():
