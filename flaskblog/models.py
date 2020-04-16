@@ -1,7 +1,8 @@
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flaskblog import db, login_manager, app
+from flaskblog import db, login_manager
 from flask_login import UserMixin
+from flask import current_app
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -20,12 +21,12 @@ class User(db.Model, UserMixin): #Each class is an individual table on the datab
     Lazy defines when to pull all the posts data from that specific user. '''
 
     def get_reset_token(self, expires_sec = 1800):
-        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
         return s.dumps({'user_id':self.id}).decode('utf-8') #return token with paylod of userid
 
     @staticmethod #not to expect that self as an arguent
     def verify_reset_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
+        s = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = s.loads(token)['user_id']
         except:

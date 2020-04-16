@@ -13,7 +13,7 @@ def save_picture(form_picture): #save the uplodated picture to our file system
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
     #app.root_path will give all the root up to the app package directory
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
+    picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
     
     output_size = (125,125)
     i = Image.open(form_picture)
@@ -35,7 +35,7 @@ def send_reset_email(user): #function to send an email!
 If you did not make this request then simply ignore this email and no changes will be made
 '''
     #mail.send(msg) #send the mail
-    Thread(target=send_async_email, args=(app,msg)).start()
+    Thread(target=send_async_email, args=(current_app,msg)).start()
 
 def send_async_email(app, msg):
     with app.app_context(): #when running a thread need to give the application context to know that the mail
